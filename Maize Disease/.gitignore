@@ -1,0 +1,6 @@
+data/
+train/
+test/
+val/
+.venv/
+*.h5
