@@ -1,6 +1,7 @@
 import pandas as pd
 from datasets import Dataset
 from transformers import MarianTokenizer, MarianMTModel, Seq2SeqTrainingArguments, Seq2SeqTrainer, DataCollatorForSeq2Seq
+import torch.nn as nn
 
 # Load Dataset
 df = pd.read_csv("english_french.csv").dropna()
@@ -30,6 +31,31 @@ eval_ds = dataset["test"]
 
 # Data Collator
 data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
+
+class Seq2seqTrainer(nn.Module):
+    def __init__(self, input_dim, output_dim, embed_dim, hidden_dim, num_layers):
+        super(Seq2seqTrainer, self).__init__()
+        self.encoder_embedding = nn.Embedding(input_dim, embed_dim)
+        self.decoder_embedding = nn.Embedding(output_dim, embed_dim)
+        self.encoder = nn.LSTM(embed_dim, hidden_dim, num_layers, bidirectional=True, batch_first=True)
+        self.decoder = nn.LSTM(embed_dim, hidden_dim * 2, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_dim * 2, output_dim)
+
+    def forward(self, src, trg):
+        embedded_src = self.encoder_embedding(src)
+        encoder_outputs, (hidden, cell) = self.encoder(embedded_src)
+
+        # Merge bidirectional outputs for decoder
+        def concat_directions(h):
+            return torch.cat((h[0:h.size(0):2], h[1:h.size(0):2]), dim=2)
+
+        hidden = concat_directions(hidden)
+        cell = concat_directions(cell)
+
+        embedded_trg = self.decoder_embedding(trg)
+        decoder_outputs, _ = self.decoder(embedded_trg, (hidden, cell))
+        outputs = self.fc(decoder_outputs)
+        return outputs
 
 # Training Arguments
 training_args = Seq2SeqTrainingArguments(
