@@ -45,7 +45,7 @@ def create_model(input_dim):
         Dense(64, activation='relu'),
         Dense(1)
     ])
-    Train_model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])
+    train_model.compile(optimizer='adam', loss='mean_squared_error', metrics=['mae'])
     return train_model
 # Extracting Features
 numerical_features = X.select_dtypes('number').columns
