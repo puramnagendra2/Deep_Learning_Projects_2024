@@ -78,7 +78,7 @@ valid_data = valid_datagen.flow_from_directory(validation_data_path,
                                   class_mode='binary')
 
 # Model Save Path
-model_path = "saved_model.h5"
+model_path = "maize_pred.h5"
 # Save only the best model
 checkpoint = ModelCheckpoint(model_path, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
@@ -103,7 +103,7 @@ model = Sequential([
     Dropout(0.1),
     Dense(256, activation='relu'),
     Dropout(0.25),
-    Dense(4, activation='softmax')  # Assuming 6 output classes
+    Dense(4, activation='softmax')  # Assuming 4 output classes
 ])
 
 # Compile Model
@@ -129,3 +129,60 @@ test_generator = test_datagen.flow_from_directory(
 # Evaluate the model
 test_loss, test_accuracy = model.evaluate(test_generator)
 print(f"Test Accuracy: {test_accuracy * 100:.2f}%")
+
+
+"""
+# Suggestions to improve accuracy:
+
+# 1. Increase the number of epochs
+history = model.fit(training_data, epochs=30, verbose=1, 
+          validation_data=valid_data, callbacks=callbacks_list)
+
+# 2. Use data augmentation more extensively
+training_datagen = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=45,
+    width_shift_range=0.3,
+    height_shift_range=0.3,
+    shear_range=0.3,
+    zoom_range=0.3,
+    horizontal_flip=True,
+    vertical_flip=True,
+    fill_mode='nearest'
+)
+
+# 3. Experiment with different architectures
+# For example, adding more layers or using pre-trained models like VGG16, ResNet, or EfficientNet
+
+base_model = VGG16(weights='imagenet', include_top=False, input_shape=(150, 150, 3))
+base_model.trainable = False  # Freeze the base model
+
+model = Sequential([
+    base_model,
+    Flatten(),
+    Dense(256, activation='relu'),
+    Dropout(0.5),
+    Dense(4, activation='softmax')  # Adjust the number of classes
+])
+
+# Compile and train the updated model
+model.compile(optimizer=Adam(learning_rate=0.0001), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+history = model.fit(training_data, epochs=20, verbose=1, 
+          validation_data=valid_data, callbacks=callbacks_list)
+
+# 4. Fine-tune the pre-trained model
+base_model.trainable = True
+model.compile(optimizer=Adam(learning_rate=1e-5), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+history = model.fit(training_data, epochs=10, verbose=1, 
+          validation_data=valid_data, callbacks=callbacks_list)
+
+# 5. Adjust learning rate dynamically using a learning rate scheduler
+
+lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1)
+callbacks_list.append(lr_scheduler)
+
+# Retrain the model with the updated callbacks
+history = model.fit(training_data, epochs=30, verbose=1, 
+          validation_data=valid_data, callbacks=callbacks_list)
+
+"""

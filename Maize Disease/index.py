@@ -46,12 +46,13 @@ st.divider()
 image_path = st.file_uploader(label="Choose an image...", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
 
 if image_path is not None:
-    image = Image.open(image_path)
+    image = Image.open(image_path).convert("RGB")
     st.image(image, caption="Uploaded Image", use_container_width=True, width=50, )
 
     result = predict_disease(trained_model, image)
 
     if result == 'Blight':
+        st.header("Blight")
         st.subheader(":red[Specification]")
         st.subheader(":blue[Apperance]")
         st.subheader(":green[Remedies]")

@@ -4,3 +4,4 @@ test/
 val/
 .venv/
 *.h5
+*.zip
