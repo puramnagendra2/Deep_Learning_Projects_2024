@@ -53,9 +53,6 @@ if image_path is not None:
 
     if result == 'Blight':
         st.header("Blight")
-        st.subheader(":red[Specification]")
-        st.subheader(":blue[Apperance]")
-        st.subheader(":green[Remedies]")
     elif result == 'Common_Rust':
         st.header("Common Rust")
     elif result == 'Gray_Leaf_Spot':
