@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 from PIL import Image
+import os
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = '0'
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import numpy as np
